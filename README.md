@@ -21,7 +21,7 @@ let x = 1;
 //To change x
 x = 2;
 ```
-FlowScript enables this by handling all reactivity under the hood with its internal reactivity engine coded in Rust!
+FlowScript enables this by handling all reactivity under the hood with its internal reactivity engine written in Rust!
 
 ### A new keyword: 'rel'
 'let'-reactivity is great, but sometimes you don't want public reactivity. To keep the reactivity private when that is called for, FlowScript adds a middle-ground between 'const' and 'let': 'rel'.
@@ -115,7 +115,7 @@ Using the 'rel'-keywordlet's you specify arguments for any normal function to ma
 You can think of any variable defined with 'rel' as follows:
 ```JavaScript
 //Remember when we defined rel y = 3 + x?
-//The following is equivalent:
+//The following is basically equivalent in more traditional code:
 rel y = () => {
   return 3 + x;
 }
@@ -131,8 +131,22 @@ rel recurringFunction = anyNormalFunction(x, z);
 //You can probably find a use for this!
 ```
 
-### Seamless async, with no need for Promises
-
+### Seamless async, with no *need* for Promises
+When a 'let' or 'rel' variable receives a return from an async function, it is *not yet defined before the return is ready*, but *starts as **undefined***.
+This means that it triggers effects that depend on it right away, but if you use the default implicit if-check, the effects cancel.
+Until, that is, the **promise is fulfilled**, at which point the Promise<any | Whatever> can be handled as just any | Whatever, and you can proceed to use it as intended.
+Hence, there is no *need* to wait for Promises, but it may still be worth using them and await, since from the moment you start using effects for this you're forced to keep using effects for everything that builds on it, which can easily get out of hand.
+Example:
+```TypeScript
+const itemHolder = { value: string | undefined };
+//Including types on someAsyncFunction to show what you get to skip
+rel resolvedPromise = someAsyncFunction<Promise<string>>(someArgument);
+// promiseUser does nothing before 
+const promiseUser = () => {
+  console.log(typeof resolvedPromise); //only ever logs 'string'
+  itemHolder.value = resolvedPromise;
+}
+```
 
 ### Reactive logging with **&log;**
 Keeping track of values in a reactive flow can be very difficult while debugging.
@@ -152,6 +166,7 @@ let reactiveString = "Hi, I'm reactive!"&log;
    //Instead of let x = "something":
    let rx = "something";
    ```
+3. Don't use reactivity if you don't need it! Seriously. Reactivity is a lot of overhead, which you don't want to pick up when it isn't necessary.
 
 ## Why mimic TypeScript?
 Since FlowScript mimics but is not built on Type/JavaScript, it does not need to inherit everything from them.
@@ -175,4 +190,35 @@ This is yet another way that FlowScript reduces the amount of code you need to w
 In addition to the arrays and objects of Type/JavaScript, FlowScript takes a cue from Python's array types by adding more direct tuple and set support.
 
 #### Tuples
-As in Python, Tuples are ordered (so you can access them by index) and **unchangeable** (so there is *never* a point in defining them with 'let' or 'rel'), and can have duplicate values.
+As in Python, Tuples are ordered (so you can access them by index) and **unchangeable** (so there is *never* a point in defining them with 'let' or 'rel') outside of deletion, and can have duplicate values, as well as different datatypes.
+To use Tuples in FlowScript, use the following syntax:
+
+```TypeScript
+//To specify Tuple type, specify for every index.
+//Type inference will identify the types automatically.
+//Only specify type if it will be reused!
+type MyTuple: (string, number, boolean);
+//To define tuple (with type), do as follows:
+const myTuple: MyTuple = ("Warhammer", 40000, false);
+//Tuples can be named
+//Type spefication for named tuple:
+type MyNamedTuple: (name: string, age: number, married: boolean);
+//If names are in type, you can skip names in definition, but you can't skip order!
+const myNamedTuple: MyNamedTuple = ("Elizabeth", 20, false);
+//To access tuple, use index. You can use name if the tuple is named:
+console.log(myTuple[0]);
+console.log(myNamedTuple[1]);
+console.log(myNamedTuple[name]);
+```
+
+#### Sets
+As in Python, sets are unordered (so you can not access them by index), and their *items* are **unchangeable**. You can add or remove items, but not change them.
+Thus, they have some interactions with FlowScript reactivity.
+Sets can not contain duplicate values, but can contain different datatypes.
+Since they are unordered, you specify types in the same way as you would with a normal TypeScript Array, and the Set only accepts members of the specified type(s).
+```TypeScript
+type StringSet string{};
+type MultiTypedSet (string | boolean | number){};
+```
+Sets are useful for checking membership quickly and so on. They have relatively few parameters that are useful in a reactive context.
+If you have a reactive tuple, and a reactive variable depends on it (for example: rel rBorgInSet = rNameSet.has("Borg);), adding an element to the set tells the variable that it has to run the operation again, changing the value of the variable accordingly.
