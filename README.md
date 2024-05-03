@@ -158,6 +158,16 @@ Example:
 ```JavaScript
 let reactiveString = "Hi, I'm reactive!"&log;
 ```
+
+### Reactivity Export Rules
+1. 'rel'-variables *can* be exported. 'let'-variables can *not* be exported.
+2. Effect-pattern reactive functions can *not* be exported. All other functions *can*.
+
+### Reactive Arguments In Functions
+All primitives (non-objects) passed as arguments to functions are *readonly*.
+As in Type/JavaScript, Objects are *not* readonly by default, and should be handled with care.
+Functions passed as arguments can be called, and can be made reactive with the 'rel'-pattern inside the function, but their reactivity will then be limited to the scope of the function which received a function as an argument.
+
 ### Reactivity Best Practices
 1. Don't use 'let' if you don't need to! Just as you should use 'const' when you don't need 'let' in Type/JavaScript, you should use 'rel' when you don't need 'let'. It makes it harder to make mistakes!
    As a rule of thumb: 'let' ***lets you start*** reactivity, and 'rel' ***continues*** reactivity!
@@ -167,6 +177,7 @@ let reactiveString = "Hi, I'm reactive!"&log;
    let rx = "something";
    ```
 3. Don't use reactivity if you don't need it! Seriously. Reactivity is a lot of overhead, which you don't want to pick up when it isn't necessary.
+4. Batch changes to reactive objects! Every time you change a single value in a reactive object, you trigger the reactivity engine. If you are going to make several changes, unless something else *must* happen in-between, make them all at once by using the [spread syntax](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_syntax)!
 
 ## Why mimic TypeScript?
 Since FlowScript mimics but is not built on Type/JavaScript, it does not need to inherit everything from them.
