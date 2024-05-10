@@ -1,16 +1,28 @@
-mod lexer;
-pub mod parser;
+//mod lexer;
+//mod parser;
 
-use std::fs::File;
-use lexer::lexing::lex;
-use parser::parse;
+use std::env;
+use std::fs;
+//use lexer::lexing::lex;
+//use parser::parse;
 
 fn main() {
-    Test
-    let test_input: String = "let Test String here! 1.09".to_string();
-    let input_bytes = test_input.as_bytes();
-    println!("{}", test_input);
+    let args: Vec<String> = env::args().collect();
+    if args.len() < 2 {
+        eprintln!("Usage: {} <test_file>", args[0]);
+        return;
+    };
+    let filename = &args[1];
+    let input = match fs::read_to_string(filename) {
+        Ok(content) => content,
+        Err(err) => {
+            eprintln!("Error reading file: {}", err);
+            return;
+        }
+    };
+    let input_bytes = input.as_bytes();
+    println!("{}", input);
     println!("{:?}", input_bytes);
-    println!("{:?}",lex(input_bytes));
-    parse(test_input);
+    //println!("{:?}",lex(input_bytes));
+    //parse(test_input);
 }

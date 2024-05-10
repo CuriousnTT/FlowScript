@@ -1,7 +1,7 @@
-mod float_parser;
+mod parser;
 
 use super::lexer::lexing::lex;
-use float_parser::handle_float;
+use parser::float_parser::handle_float;
 
 pub fn parse(input: String) {
     let input_bytes = input.as_bytes();
