@@ -1,3 +1,2 @@
-1.5
-2.4
-33
+let x = 1.5;
+console.log(x)

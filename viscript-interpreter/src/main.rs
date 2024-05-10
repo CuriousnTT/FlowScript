@@ -1,9 +1,9 @@
-//mod lexer;
+mod lexer;
 //mod parser;
 
 use std::env;
 use std::fs;
-//use lexer::lexing::lex;
+use lexer::lexing::lex;
 //use parser::parse;
 
 fn main() {
@@ -21,8 +21,8 @@ fn main() {
         }
     };
     let input_bytes = input.as_bytes();
-    println!("{}", input);
-    println!("{:?}", input_bytes);
-    //println!("{:?}",lex(input_bytes));
+    println!("Hello, this is input: {}", input);
+    println!("Hello, this is input as bytes: {:?}", input_bytes);
+    println!("Is there a float in there? {:?}",lex(input_bytes));
     //parse(test_input);
 }
