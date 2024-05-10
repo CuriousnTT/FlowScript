@@ -1,7 +1,11 @@
-# FlowScript ***#WIP***
-The programming language designed for reactive *flow*!
-FlowScript will be built from scratch to resemble TypeScript, and aims to require minimal changes to a TypeScript file in order to run it as FlowScript.
+# ViScript ***#WIP***
+The programming language designed for reactivity!
+[Viscosity](https://en.wikipedia.org/wiki/Viscosity) describes how easily a fluid changes shape. The less viscous a fluid is, the more easily it changes.
+ViScript is almost TypeScript, but it is "liquid" and allows you to dial down the viscosity as much as you like!
+A word of caution: The more easily it changes, the more easily it gets out of hand. Hence, Wikipedia describes viscosity as "resistance to deformation". **When you make "liquid" code, you *must* consider viscosity!**
+ViScript aims to resemble TypeScript, to require minimal changes to a TypeScript file in order to run it as ViScript.
 If it isn't specified, it should be just like in TypeScript!
+You write ViScript in .vs files.
 
 ## Reactivity
 ### No need for refs, useState or effects wrappers!
@@ -14,17 +18,17 @@ const [x, setX] = useState(1);
 //To change x
 setX(2);
 ```
-...can be done like this in FlowScript:
+...can be done like this in ViScript:
 ```JavaScript
 //To define x
 let x = 1;
 //To change x
 x = 2;
 ```
-FlowScript enables this by handling all reactivity under the hood with its internal reactivity engine written in Rust!
+ViScript enables this by handling all reactivity under the hood with its internal reactivity engine written in Rust!
 
 ### A new keyword: 'rel'
-'let'-reactivity is great, but sometimes you don't want public reactivity. To keep the reactivity private when that is called for, FlowScript adds a middle-ground between 'const' and 'let': 'rel'.
+'let'-reactivity is great, but sometimes you don't want public reactivity. To keep the reactivity private when that is called for, ViScript adds a middle-ground between 'const' and 'let': 'rel'.
 It is short for 'relationship', and denotes a constant relationship that is reactive. It is loosely inspired by Vue's computed()-values.
 This is how 'rel' works:
 
@@ -33,13 +37,13 @@ This is how 'rel' works:
 rel y = 1 + x;
 //To change y, you must change x!
 //WILL NOT WORK: y = 3 + x;
-x = 3; //Changing x makes FlowScript recalculate y. New value = 6
+x = 3; //Changing x makes ViScript recalculate y. New value = 6
 ```
 
 ### Reactivity is opt-in!
-You don't always want reactivity. FlowScript seeks to make it intuitive what is and is not reactive. When you have a "constant", do you expect it to be reactive? Of course not! Hence, 'const' excepts whatever you define with it from the reactivity engine.
+You don't always want reactivity. ViScript seeks to make it intuitive what is and is not reactive. When you have a "constant", do you expect it to be reactive? Of course not! Hence, 'const' excepts whatever you define with it from the reactivity engine.
 It is currently considered a good practice in Type/JavaScript to use 'const' for all cases where you don't intend for the value to change (and conversely, 'let' when you expect changes), and this taps into that.
-This keeps it intuitive, makes it easy to refactor from Type/JavaScript to FlowScript incrementally, and saves the reactivity engine from unnecessary work.
+This keeps it intuitive, makes it easy to refactor from Type/JavaScript to ViScript incrementally, and saves the reactivity engine from unnecessary work.
 As in Type/JavaScript, when you define an object with 'const', you can still change the values of its keys. If you (for some reason) need a value to not be reactive but still changeable, just wrap it in an object:
 
 ```JavaScript
@@ -51,11 +55,11 @@ z.value = 6; //This will work, and will not trigger any reactivity.
 ```
 
 ### Reactive Functions
-FlowScript introduces two patterns for creating reactive functions: The effect-pattern, and the 'rel'-pattern.
+ViScript introduces two patterns for creating reactive functions: The effect-pattern, and the 'rel'-pattern.
 
 #### The effect-pattern
 Based on React's useEffect and Vue's watchEffect, the effect pattern interacts with variables in the same scope. It executes immediately where it is defined, and again if any reactive variable it accesses changes.
-To make a FlowScript effect function, you define a function in any way you like ('const' will also work!), but:
+To make a ViScript effect function, you define a function in any way you like ('const' will also work!), but:
 1. It must not take any arguments.
 2. It must not specify any return.
 3. It must not be exported.
@@ -73,13 +77,13 @@ x = 4 //This triggers recalculation of y
 // logging y's value (now: 7) and changing the value of z to 7
 ```
 
-Are you beginning to see why this is *flow*-script?
+As you can see, you can get a lot from considering your program's viscosity!
 Effects can also be called manually if you really want to.
 They do some extra things under the hood that you should know about.
 
 ##### Implicit if-check
 Effect functions expect two primary use cases, and therefore include an implicit if-check.
-This check is very simple: "if all accessed variables are truthy, then execute", which can be useful when working with async (it allows FlowScript to work without considering Promises) or for simple effects.
+This check is very simple: "if all accessed variables are truthy, then execute", which can be useful when working with async (it allows ViScript to work without considering Promises) or for simple effects.
 This implicit check gets removed if the top level of the effect is an if-check. Then your check gets used instead. This lets you engineer very specific effects when you need them.
 If you provide your own if-check, take note: It should not include an else-segment (but else-if-segments are OK!).
 These if-checks get used in logging to provide information on whether the effect did anything or not when it triggered.
@@ -150,8 +154,8 @@ const promiseUser = () => {
 
 ### Reactive logging with **&log;**
 Keeping track of values in a reactive flow can be very difficult while debugging.
-Anticipating this problem, FlowScript includes the **&log;** directive.
-Append any line that defines something with **&log;**, and FlowScript will note how it got to the line (the immediate parent function - this may be valuable if the file gets invoked in several places, as a React component might be!), the name of the logged variable or function, and its current value if it was a variable (this includes 'rel'-pattern reactive functions).
+Anticipating this problem, ViScript includes the **&log;** directive.
+Append any line that defines something with **&log;**, and ViScript will note how it got to the line (the immediate parent function - this may be valuable if the file gets invoked in several places, as a React component might be!), the name of the logged variable or function, and its current value if it was a variable (this includes 'rel'-pattern reactive functions).
 It will then log every time the variable changes, or for effects, true if it executed and false if it did not, and include the additional information it noted about it.
 This should make it a lot easier to track the changes to a reactive variable and when/how much a reactive function triggers.
 Example:
@@ -180,7 +184,7 @@ Functions passed as arguments can be called, and can be made reactive with the '
 4. Batch changes to reactive objects! Every time you change a single value in a reactive object, you trigger the reactivity engine. If you are going to make several changes, unless something else *must* happen in-between, make them all at once by using the [spread syntax](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_syntax)!
 
 ## Why mimic TypeScript?
-Since FlowScript mimics but is not built on Type/JavaScript, it does not need to inherit everything from them.
+Since ViScript mimics but is not built on Type/JavaScript, it does not need to inherit everything from them.
 Here are some benefits with starting from scratch.
 
 ### Consolidating '**null**' into '**undefined**'
@@ -195,14 +199,14 @@ type MyType = {
 }
 ```
 If this type is used as the accepted argument of a function, it accepts but does not request the directive, in a simple syntax that has no equivalent for '**null**'.
-This is yet another way that FlowScript reduces the amount of code you need to write.
+This is yet another way that ViScript reduces the amount of code you need to write.
 
 ### Types from Python
-In addition to the arrays and objects of Type/JavaScript, FlowScript takes a cue from Python's array types by adding more direct tuple and set support.
+In addition to the arrays and objects of Type/JavaScript, ViScript takes a cue from Python's array types by adding more direct tuple and set support.
 
 #### Tuples
 As in Python, Tuples are ordered (so you can access them by index) and **unchangeable** (so there is *never* a point in defining them with 'let' or 'rel') outside of deletion, and can have duplicate values, as well as different datatypes.
-To use Tuples in FlowScript, use the following syntax:
+To use Tuples in ViScript, use the following syntax:
 
 ```TypeScript
 //To specify Tuple type, specify for every index.
@@ -224,7 +228,7 @@ console.log(myNamedTuple[name]);
 
 #### Sets
 As in Python, sets are unordered (so you can not access them by index), and their *items* are **unchangeable**. You can add or remove items, but not change them.
-Thus, they have some interactions with FlowScript reactivity.
+Thus, they have some interactions with ViScript reactivity.
 Sets can not contain duplicate values, but can contain different datatypes.
 Since they are unordered, you specify types in the same way as you would with a normal TypeScript Array, and the Set only accepts members of the specified type(s).
 ```TypeScript
