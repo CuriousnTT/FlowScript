@@ -1,3 +1,5 @@
+// re2rust $INPUT -o $OUTPUT
+
 pub fn lex(s: &[u8]) -> bool {
   /*!re2c
     re2c:define:YYCTYPE = char;

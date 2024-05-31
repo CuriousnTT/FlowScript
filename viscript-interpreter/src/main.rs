@@ -3,7 +3,7 @@ mod lexer;
 
 use std::env;
 use std::fs;
-use lexer::lexing::lex;
+use lexer::lexing::tokenize;
 //use parser::parse;
 
 fn main() {
@@ -20,9 +20,10 @@ fn main() {
             return;
         }
     };
+    let input = input.replace("\r\n", "\n");
     let input_bytes = input.as_bytes();
-    println!("Hello, this is input: {}", input);
-    println!("Hello, this is input as bytes: {:?}", input_bytes);
-    println!("Is there a float in there? {:?}",lex(input_bytes));
+    println!("This is the input:\n\n{}\n", input);
+    println!("This is the input as bytes:\n\n{:?}", input_bytes);
+    println!("This is the input as tokens:\n{:?}",tokenize(&input.as_str()));
     //parse(test_input);
 }
