@@ -1,4 +1,5 @@
 use regex::Regex;
+use lazy_static::lazy_static;
 
 #[derive(Debug)]
 pub enum Token {
@@ -16,26 +17,28 @@ pub enum Token {
 }
 
 // Besides Keyword, this comes from AI. May be incomplete
-const TOKEN_REGEX: &[(&str, Option<fn(String) -> Token>)] = &[
-    (r"[ \t\n]+", None), // Skip whitespace
-    (r"//.*", None), // Skip single-line comments
-    (r"/\*[\s\S]*?\*/", None), // Skip multi-line comments
-    (
-        r"as|async|await|break|case|catch|class|const|continue|debugger|default|delete|do|else|enum|export|extends|false|finally|for|from|function|get|if|import|implements|in|instanceof|interface|let|meta|new|null|of|package|private|protected|public|rel|return|set|static|super|switch|target|this|throw|true|try|typeof|void|while|with|yield",
-        Some(Token::Keyword)
-    ),
-    (r"&log", Some(Token::Directive)),
-    (r"true|false|undefined", Some(Token::Literal)),
-    (r"\d+(\.\d+)?", Some(Token::Number)),
-    (r#""(?:\\.|[^\\"])*""#, Some(Token::StringLiteral)),
-    (r"[A-Za-z_][A-Za-z0-9_]*", Some(Token::Identifier)),
-    (r"[+\-*/=]", Some(Token::Operator)),
-    ("==|!=|<=|>=|<|>", Some(Token::ComparisonOperator)),
-    (r"&&|\|\|", Some(Token::LogicalOperator)),
-    (r"[(){}\[\];,]", Some(Token::Punctuation)),
-    (r"\.", Some(Token::Punctuation)),
-    (r":", Some(Token::Punctuation)),
-];
+lazy_static! {
+    static ref TOKEN_REGEX: Vec<(Regex, Option<fn(String) -> Token>)> = vec![
+        (Regex::new(r"[ \t\n]+").unwrap(), None), // Skip whitespace
+        (Regex::new(r"//.*").unwrap(), None), // Skip single-line comments
+        (Regex::new(r"/\*[\s\S]*?\*/").unwrap(), None), // Skip multi-line comments
+        (
+            Regex::new(r"as|async|await|break|case|catch|class|const|continue|debugger|default|delete|do|else|enum|export|extends|false|finally|for|from|function|get|if|import|implements|in|instanceof|interface|let|meta|new|null|of|package|private|protected|public|rel|return|set|static|super|switch|target|this|throw|true|try|type|typeof|void|while|with|yield").unwrap(),
+            Some(Token::Keyword)
+        ),
+        (Regex::new(r"&log").unwrap(), Some(Token::Directive)),
+        (Regex::new(r"true|false|undefined").unwrap(), Some(Token::Literal)),
+        (Regex::new(r"\d+(\.\d+)?").unwrap(), Some(Token::Number)),
+        (Regex::new(r#""(?:\\.|[^\\"])*""#).unwrap(), Some(Token::StringLiteral)),
+        (Regex::new(r"[A-Za-z_][A-Za-z0-9_]*").unwrap(), Some(Token::Identifier)),
+        (Regex::new(r"[+\-*/=]").unwrap(), Some(Token::Operator)),
+        (Regex::new("==|!=|<=|>=|<|>").unwrap(), Some(Token::ComparisonOperator)),
+        (Regex::new(r"&&|\|\|").unwrap(), Some(Token::LogicalOperator)),
+        (Regex::new(r"[(){}\[\];,]").unwrap(), Some(Token::Punctuation)),
+        (Regex::new(r"\.").unwrap(), Some(Token::Punctuation)),
+        (Regex::new(r":").unwrap(), Some(Token::Punctuation)),
+    ];
+}
 
 pub fn tokenize(source_code: &str) -> Vec<Token> {
     let mut tokens = Vec::new();
@@ -44,8 +47,7 @@ pub fn tokenize(source_code: &str) -> Vec<Token> {
     while pos < source_code.len() {
         let mut matched = false;
         
-        for (regex_str, token_fn) in TOKEN_REGEX {
-            let regex = Regex::new(regex_str).unwrap();
+        for (regex, token_fn) in TOKEN_REGEX.iter() {
             if let Some(mat) = regex.find(&source_code[pos..]) {
                 if mat.start() == 0 {
                     matched = true;
@@ -61,11 +63,11 @@ pub fn tokenize(source_code: &str) -> Vec<Token> {
             }
         }
         if !matched {
-            panic!(
+            eprintln!(
                 "Unexpected character: {:?} at position {}",
-                &source_code[pos..].chars().next().unwrap(),
-                pos
+                &source_code[pos..].chars().next().unwrap(), pos
             );
+            pos += 1;
         }
     }
     tokens.push(Token::EOF);
