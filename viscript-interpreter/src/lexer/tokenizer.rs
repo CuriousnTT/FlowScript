@@ -1,20 +1,25 @@
 use regex::Regex;
 use lazy_static::lazy_static;
+use std::fmt;
+
+use super::token::Token;
 
 #[derive(Debug)]
-pub enum Token {
-    Keyword(String),
-    Identifier(String),
-    Literal(String),
-    Number(String),
-    StringLiteral(String),
-    Operator(String),
-    ComparisonOperator(String),
-    LogicalOperator(String),
-    Punctuation(String),
-    Directive(String),
-    EOF,
+pub enum LexerError {
+    UnexpectedCharacter(char, usize),
 }
+
+impl fmt::Display for LexerError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            LexerError::UnexpectedCharacter(c, pos) => {
+                write!(f, "Unexpected character: '{}' at position {}", c, pos)
+            }
+        }
+    }
+}
+
+impl std::error::Error for LexerError {}
 
 // Besides Keyword, this comes from AI. May be incomplete
 lazy_static! {
@@ -40,7 +45,7 @@ lazy_static! {
     ];
 }
 
-pub fn tokenize(source_code: &str) -> Vec<Token> {
+pub fn tokenize(source_code: &str) -> Result<Vec<Token>, LexerError> {
     let mut tokens = Vec::new();
     let mut pos = 0;
 
@@ -63,13 +68,11 @@ pub fn tokenize(source_code: &str) -> Vec<Token> {
             }
         }
         if !matched {
-            eprintln!(
-                "Unexpected character: {:?} at position {}",
-                &source_code[pos..].chars().next().unwrap(), pos
-            );
-            pos += 1;
+            return Err(LexerError::UnexpectedCharacter(
+                source_code[pos..].chars().next().unwrap(), pos
+            ));
         }
     }
     tokens.push(Token::EOF);
-    tokens
+    Ok(tokens)
 }

@@ -1,11 +1,11 @@
 mod lexer;
-//mod parser;
+mod parser;
 
 use std::env;
 use std::fs;
 use lexer::tokenizer::tokenize;
-//use parser::ast::ASTNode;
-//use parser::parse;
+use parser::ast::ASTNode;
+use parser::parser::parse;
 
 fn main() {
     //Get test file from arguments
@@ -16,6 +16,7 @@ fn main() {
     };
     let filename = &args[1];
     println!("Reading {}...", filename);
+
     //Read and adapt test file to avoid errors
     let input = match fs::read_to_string(filename) {
         Ok(content) => content,
@@ -25,9 +26,18 @@ fn main() {
         }
     };
     let input = input.replace("\r\n", "\n");
-    let tokens = tokenize(&input.as_str());
-    //let input_bytes = &input.as_bytes();
-    //let ast: ASTNode = parse(tokens);
     println!("Input:\n\n{}\n", input);
-    println!("Input Tokenized:\n{:?}", tokens);
+    
+    let tokens = match tokenize(&input) {
+        Ok(tokens) => tokens,
+        Err(err) => {
+            eprintln!("Error tokenizing input: {}", err);
+            return;
+        }
+    };
+    //println!("Input Tokenized:\n{:?}", tokens);
+    
+    //let input_bytes = &input.as_bytes();
+    //let ast: ASTNode = parse(&tokens);
+    //println!("Token AST:\n{:?}", ast);
 }

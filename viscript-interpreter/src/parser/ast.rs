@@ -1,26 +1,38 @@
+use super::super::lexer::token::Token;
+
 #[derive(Debug)]
 pub enum ASTNode {
-    Program(Vec<ASTNode>),
     VariableDeclaration {
-        keyword: String,
-        Identifier: String,
+        keyword: Token,
+        identifier: String,
         value: Box<ASTNode>,
+        directive: Option<Token>,
     },
-    FunctionCall {
+    FunctionDeclaration {
+        name: String,
+        body: Box<ASTNode>,
+    },
+    /*FunctionCall {
         callee: String,
         arguments: Vec<ASTNode>,
-    },
-    Block(Vec<ASTNode>),
+    },*/
     Expression {
-        left:Box<ASTNode>,
+        left: Box<ASTNode>,
         operator: String,
         right: Box<ASTNode>,
     },
-    Identifier(String),
-    NumberLiteral(String),
-    StringLiteral(String),
+    MemberAccess {
+        object: Box<ASTNode>,
+        property: String,
+    },
     IfStatement {
         condition: Box<ASTNode>,
         consequence: Box<ASTNode>,
     },
+    Block(Vec<ASTNode>),
+    Identifier(String),
+    NumberLiteral(String),
+    StringLiteral(String),
+    Directive(String),
+    Program(Vec<ASTNode>),
 }
